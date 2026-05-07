@@ -1,17 +1,14 @@
-import React, { useState, useEffect } from 'react';
-import { useLocation, Link, useNavigate } from 'react-router-dom';
-import { QrCode, Home, Share2, Download, CheckCircle } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import React from 'react';
+import { useLocation, Link, Navigate } from 'react-router-dom';
+import { QrCode, Home, Download } from 'lucide-react';
 import PageTransition from '../components/PageTransition';
 
 const BookingSuccessPage = () => {
     const location = useLocation();
-    const navigate = useNavigate();
-    const [isSaved, setIsSaved] = useState(false);
+    if (!location.state) return <Navigate to="/" replace />;
 
-    // ... (rest of destructuring logic)
     const {
-        seats,
+        seats = [],
         totalPrice,
         sessionId,
         movieTitle,
@@ -21,15 +18,12 @@ const BookingSuccessPage = () => {
         showDate,
         poster,
         movieImage
-    } = location.state || {}; // No defaults
+    } = location.state;
 
     const displayImage = movieImage || poster || 'https://via.placeholder.com/600x400?text=No+Movie+Image';
 
     const handleSave = () => {
-        setIsSaved(true);
-        setTimeout(() => {
-            setIsSaved(false);
-        }, 2000);
+        // Save not yet implemented — visual feedback disabled
     };
 
     return (
@@ -113,7 +107,7 @@ const BookingSuccessPage = () => {
                         <div>
                             <div style={{ fontSize: '11px', color: '#666', marginBottom: '4px', textTransform: 'uppercase' }}>Seats</div>
                             <div style={{ fontWeight: '600', color: 'var(--color-primary)' }}>
-                                {seats.length > 0 ? seats.map(s => s.id).join(', ') : 'E11, E12'}
+                                {seats.length > 0 ? seats.map(s => s.id).join(', ') : '—'}
                             </div>
                         </div>
                     </div>
@@ -149,53 +143,19 @@ const BookingSuccessPage = () => {
                 </Link>
                 <div style={{ flex: 1 }}>
                     <button
-                        onClick={handleSave}
+                        disabled
+                        title="Coming soon"
                         style={{
                             width: '100%', padding: '14px', borderRadius: '12px', border: 'none',
                             background: 'var(--color-primary)', color: 'white', fontWeight: '600', display: 'flex',
-                            alignItems: 'center', justifyContent: 'center', gap: '8px', cursor: 'pointer'
+                            alignItems: 'center', justifyContent: 'center', gap: '8px',
+                            opacity: 0.5, cursor: 'not-allowed'
                         }}
                     >
                         <Download size={18} /> Save
                     </button>
                 </div>
             </div>
-
-            {/* Save Success Overlay */}
-            <AnimatePresence>
-                {isSaved && (
-                    <motion.div
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                        style={{
-                            position: 'fixed', inset: 0, zIndex: 100,
-                            background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(10px)',
-                            display: 'flex', alignItems: 'center', justifyContent: 'center'
-                        }}
-                    >
-                        <motion.div
-                            initial={{ scale: 0.5, opacity: 0 }}
-                            animate={{ scale: 1, opacity: 1, transition: { type: 'spring', damping: 20 } }}
-                            exit={{ scale: 0.8, opacity: 0 }}
-                            style={{
-                                background: 'rgba(25, 25, 30, 0.9)',
-                                padding: '30px', borderRadius: '24px', textAlign: 'center',
-                                border: '1px solid rgba(255,255,255,0.1)'
-                            }}
-                        >
-                            <div style={{
-                                width: '60px', height: '60px', background: 'rgba(34, 197, 94, 0.2)',
-                                borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                margin: '0 auto 16px auto', color: '#22c55e'
-                            }}>
-                                <CheckCircle size={32} />
-                            </div>
-                            <h3 style={{ fontSize: '18px', fontWeight: 'bold', margin: 0 }}>Saved to Gallery</h3>
-                        </motion.div>
-                    </motion.div>
-                )}
-            </AnimatePresence>
 
         </PageTransition>
     );

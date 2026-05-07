@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { getMovieDetail } from '../services/api';
 
 // Cache TTL: 5 minutes
@@ -13,12 +13,10 @@ const CACHE_TTL_MS = 5 * 60 * 1000;
  * - Manual refetch capability for pull-to-refresh
  */
 const useMovieCache = (movieId) => {
-    const CACHE_KEY = `movie_cache_${movieId}`;
-
     // Initialize state from cache if available and not expired
     const [movie, setMovie] = useState(() => {
         try {
-            const cached = sessionStorage.getItem(CACHE_KEY);
+            const cached = sessionStorage.getItem(`movie_cache_${movieId}`);
             if (cached) {
                 const { data, timestamp } = JSON.parse(cached);
                 // Check if cache is still valid
@@ -26,12 +24,12 @@ const useMovieCache = (movieId) => {
                     return data;
                 }
                 // Cache expired - clear it
-                sessionStorage.removeItem(CACHE_KEY);
+                sessionStorage.removeItem(`movie_cache_${movieId}`);
             }
             return null;
         } catch (error) {
             console.warn('Error reading movie cache:', error);
-            sessionStorage.removeItem(CACHE_KEY);
+            sessionStorage.removeItem(`movie_cache_${movieId}`);
             return null;
         }
     });
@@ -39,21 +37,22 @@ const useMovieCache = (movieId) => {
     const [loading, setLoading] = useState(!movie);
     const [error, setError] = useState(null);
 
-    // Core fetch function
+    const movieRef = useRef(movie);
+    movieRef.current = movie;
+
+    // Core fetch function — movieRef used instead of movie to avoid stale-closure loop
     const fetchData = useCallback(async (forceRefresh = false) => {
         if (!movieId) return;
 
         try {
-            // Show loading only if no cached data OR force refresh
-            if (!movie || forceRefresh) setLoading(true);
+            if (!movieRef.current || forceRefresh) setLoading(true);
             setError(null);
 
             const fetchedData = await getMovieDetail(movieId);
 
             if (fetchedData) {
                 setMovie(fetchedData);
-                // Store with timestamp for TTL
-                sessionStorage.setItem(CACHE_KEY, JSON.stringify({
+                sessionStorage.setItem(`movie_cache_${movieId}`, JSON.stringify({
                     data: fetchedData,
                     timestamp: Date.now()
                 }));
@@ -62,18 +61,17 @@ const useMovieCache = (movieId) => {
             }
         } catch (err) {
             console.error('Error fetching movie:', err);
-            // Distinguish network errors from other errors
             setError(err.message === 'Failed to fetch' ? 'network' : err.message);
         } finally {
             setLoading(false);
         }
-    }, [movieId, CACHE_KEY, movie]);
+    }, [movieId]);
 
     // Manual refetch function (for pull-to-refresh)
     const refetch = useCallback(() => {
-        sessionStorage.removeItem(CACHE_KEY);
+        sessionStorage.removeItem(`movie_cache_${movieId}`);
         return fetchData(true);
-    }, [CACHE_KEY, fetchData]);
+    }, [movieId, fetchData]);
 
     useEffect(() => {
         fetchData();

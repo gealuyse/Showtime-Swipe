@@ -12,6 +12,7 @@ const Preloader = ({ onComplete }) => {
     }, []);
 
     const containerVariants = {
+        initial: { y: 0 },
         exit: {
             y: '-100%',
             transition: {
