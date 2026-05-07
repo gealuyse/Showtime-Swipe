@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { ChevronRight, MapPin } from 'lucide-react';
@@ -7,34 +7,27 @@ import BrandBadge from '../ui/BrandBadge';
 import { calculateEndTime } from '../../utils/dataTransformer';
 import { generateSeatsForSession } from '../../utils/seatGenerator';
 
-/**
- * TimelineShowtimeCard - Modern Cinema Card
- * Unified responsive layout matching "Theater List" aesthetic.
- * Single structure that gracefully adapts to screen size.
- */
 const TimelineShowtimeCard = ({ showtime, movieDuration }) => {
     const { id, time, system, price, theater, language } = showtime;
     const navigate = useNavigate();
     const location = useLocation();
+    const [hovered, setHovered] = useState(false);
 
     const endTime = calculateEndTime(time, movieDuration);
 
     const handleNavigation = (e) => {
         e.preventDefault();
-        const navigateToBooking = () => {
-            navigate(`/booking/${id}`, {
-                state: {
-                    showtimeData: showtime,
-                    backgroundLocation: location,
-                    preGeneratedSeats: generateSeatsForSession(id)
-                }
-            });
-        };
-
+        const go = () => navigate(`/booking/${id}`, {
+            state: {
+                showtimeData: showtime,
+                backgroundLocation: location,
+                preGeneratedSeats: generateSeatsForSession(id)
+            }
+        });
         if (document.startViewTransition) {
-            document.startViewTransition(() => navigateToBooking());
+            document.startViewTransition(go);
         } else {
-            navigateToBooking();
+            go();
         }
     };
 
@@ -42,74 +35,91 @@ const TimelineShowtimeCard = ({ showtime, movieDuration }) => {
         <a
             href={`/booking/${id}`}
             onClick={handleNavigation}
-            className="block w-full no-underline cursor-pointer group rounded-xl focus:outline-none focus:ring-2 focus:ring-red-500"
-            aria-label={`Book ${theater.name} at ${time}, ${system} system, Price ${price} Baht`}
+            aria-label={`Book ${theater.name} at ${time}, ${system}, ${price} Baht`}
+            style={{ display: 'block', textDecoration: 'none', outline: 'none' }}
+            onMouseEnter={() => setHovered(true)}
+            onMouseLeave={() => setHovered(false)}
         >
-            {/* Main Container Card */}
-            <div className="
-                bg-[#1C1E26] border border-white/5 rounded-xl overflow-hidden
-                transition-all duration-200
-                hover:border-white/20 hover:bg-[#23252e]
-                p-4 flex flex-col gap-3
-                md:flex-row md:items-center md:justify-between md:gap-6
-            ">
+            <div style={{
+                background: hovered ? '#23252e' : '#1c1e26',
+                border: `1px solid ${hovered ? 'rgba(255,255,255,0.2)' : 'rgba(255,255,255,0.05)'}`,
+                borderRadius: '12px',
+                overflow: 'hidden',
+                padding: '16px',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '12px',
+                transition: 'background 0.2s, border-color 0.2s'
+            }}>
 
-                {/* Section 1: Theater Header */}
-                <div className="flex items-center gap-2 md:flex-1 md:min-w-0">
-                    <span className="text-base font-bold text-white leading-tight truncate">
+                {/* Row 1: Theater name + brand */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', minWidth: 0 }}>
+                    <span style={{
+                        fontSize: '15px', fontWeight: '700', color: 'white',
+                        overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flex: 1
+                    }}>
                         {theater.name}
                     </span>
-                    <div className="shrink-0">
+                    <div style={{ flexShrink: 0 }}>
                         <BrandBadge brand={theater.brand} theaterName={theater.name} />
                     </div>
                 </div>
 
-                {/* Section 2: Time & Details Block */}
-                <div className="flex flex-row items-start justify-between md:justify-start md:items-center md:gap-8">
+                {/* Row 2: Time block + details + price */}
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '16px' }}>
 
-                    {/* Time Group */}
-                    <div className="flex flex-col">
-                        <span className="text-3xl font-black text-white leading-none tracking-tight">
+                    {/* Time */}
+                    <div style={{ display: 'flex', flexDirection: 'column', minWidth: '60px' }}>
+                        <span style={{ fontSize: '28px', fontWeight: '900', color: 'white', lineHeight: 1, letterSpacing: '-0.5px' }}>
                             {time}
                         </span>
-                        <span className="text-xs text-gray-500 mt-1 font-medium">
+                        <span style={{ fontSize: '11px', color: '#6b7280', marginTop: '4px', fontWeight: '500' }}>
                             ~{endTime}
                         </span>
                     </div>
 
-                    {/* Details Group */}
-                    <div className="flex flex-col items-end md:items-start gap-1 text-xs text-gray-400">
-                        {/* System + Language Row */}
-                        <div className="flex items-center gap-2">
+                    {/* System + language + location */}
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', flex: 1 }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                             <SystemBadge system={system} />
-                            <span className="text-gray-600">•</span>
-                            <span className="border border-white/10 px-1.5 py-0.5 rounded text-[10px] uppercase text-gray-400">
+                            <span style={{ color: '#4b5563', fontSize: '11px' }}>•</span>
+                            <span style={{
+                                border: '1px solid rgba(255,255,255,0.1)',
+                                padding: '1px 6px',
+                                borderRadius: '4px',
+                                fontSize: '10px',
+                                textTransform: 'uppercase',
+                                color: '#9ca3af'
+                            }}>
                                 {language || 'EN/TH'}
                             </span>
                         </div>
-
-                        {/* Location Row */}
-                        <div className="flex items-center gap-1 text-gray-500">
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '4px', color: '#6b7280', fontSize: '11px' }}>
                             <MapPin size={11} />
-                            <span className="truncate max-w-[150px]">
+                            <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '150px' }}>
                                 {theater.location?.district || 'Bangkok'}
                             </span>
                         </div>
                     </div>
-                </div>
 
-                {/* Section 3: Price & Action */}
-                <div className="
-                    flex items-center justify-between gap-2 pt-2 border-t border-white/5
-                    md:flex-col md:items-end md:justify-center md:pt-0 md:border-t-0 md:pl-4 md:border-l md:border-white/5
-                ">
-                    <span className="text-xl font-black text-yellow-500 leading-none">
-                        {price}฿
-                    </span>
-                    <ChevronRight
-                        size={20}
-                        className="text-gray-500 transition-all group-hover:text-yellow-500 group-hover:translate-x-1"
-                    />
+                    {/* Price + chevron */}
+                    <div style={{
+                        display: 'flex', flexDirection: 'column', alignItems: 'flex-end',
+                        gap: '4px', paddingLeft: '16px',
+                        borderLeft: '1px solid rgba(255,255,255,0.05)'
+                    }}>
+                        <span style={{ fontSize: '20px', fontWeight: '900', color: '#eab308', lineHeight: 1 }}>
+                            {price}฿
+                        </span>
+                        <ChevronRight
+                            size={18}
+                            style={{
+                                color: hovered ? '#eab308' : '#6b7280',
+                                transform: hovered ? 'translateX(2px)' : 'none',
+                                transition: 'color 0.2s, transform 0.2s'
+                            }}
+                        />
+                    </div>
                 </div>
 
             </div>
@@ -130,10 +140,7 @@ TimelineShowtimeCard.propTypes = {
         }).isRequired,
         language: PropTypes.string
     }).isRequired,
-    movieDuration: PropTypes.oneOfType([
-        PropTypes.number,
-        PropTypes.string
-    ])
+    movieDuration: PropTypes.oneOfType([PropTypes.number, PropTypes.string])
 };
 
 TimelineShowtimeCard.defaultProps = {
