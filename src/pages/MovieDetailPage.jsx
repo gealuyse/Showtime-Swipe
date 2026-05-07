@@ -21,7 +21,7 @@ import usePullToRefresh from '../hooks/usePullToRefresh';
 const MovieDetailPage = () => {
     const { id } = useParams();
     // Parse the numeric ID from the slug (e.g., "123-movie-title" -> "123")
-    const movieId = id ? id.split('-')[0] : null;
+    const movieId = id?.match(/^(\d+)/)?.[1] ?? null;
 
     // Use Cache Hook for Instant "Back" (now with refetch support)
     const { movie, loading, error, refetch } = useMovieCache(movieId);

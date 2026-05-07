@@ -4,12 +4,14 @@ import { motion } from 'framer-motion';
 import PageTransition from '../components/PageTransition';
 import MovieCard from '../components/MovieCard';
 import MovieCardSkeleton from '../components/MovieCardSkeleton';
-import { getNowPlayingMovies } from '../services/api';
+import { getNowPlayingMovies, searchMovies } from '../services/api';
 import useScrollPosition from '../hooks/useScrollPosition';
 
 const HomePage = () => {
     const [movies, setMovies] = useState([]);
     const [searchTerm, setSearchTerm] = useState('');
+    const [searchResults, setSearchResults] = useState([]);
+    const [isSearching, setIsSearching] = useState(false);
     const [loading, setLoading] = useState(false);
     const [page, setPage] = useState(1);
     const [hasMore, setHasMore] = useState(true);
@@ -39,9 +41,10 @@ const HomePage = () => {
         return () => clearTimeout(timer);
     }, []);
 
-    const showInitialSkeleton = isMounting || (loading && movies.length === 0);
+    const showInitialSkeleton = isMounting || (loading && movies.length === 0 && !searchTerm);
 
     useEffect(() => {
+        if (searchTerm) return; // search results handled separately
         const fetchMovies = async () => {
             setLoading(true);
             const data = await getNowPlayingMovies(page);
@@ -49,7 +52,6 @@ const HomePage = () => {
                 setHasMore(false);
             } else {
                 setMovies(prev => {
-                    // Prevent duplicates if React strict mode causes double fetch or fast scroll
                     const existingIds = new Set(prev.map(m => m.id));
                     const uniqueNewMovies = data.filter(m => !existingIds.has(m.id));
                     return [...prev, ...uniqueNewMovies];
@@ -57,14 +59,32 @@ const HomePage = () => {
             }
             setLoading(false);
         };
-        // Debounce search/fetch logic if needed, but here dependent on page increment
         fetchMovies();
-    }, [page]);
+    }, [page, searchTerm]);
 
-    // Filter movies based on search
-    const filteredMovies = movies.filter(movie =>
-        movie.title.toLowerCase().includes(searchTerm.toLowerCase())
-    );
+    // TMDB search when a query is active
+    useEffect(() => {
+        if (!searchTerm) {
+            setSearchResults([]);
+            return;
+        }
+        const controller = new AbortController();
+        const timer = setTimeout(async () => {
+            setIsSearching(true);
+            const results = await searchMovies(searchTerm);
+            if (!controller.signal.aborted) {
+                setSearchResults(results);
+                setIsSearching(false);
+            }
+        }, 400);
+        return () => {
+            clearTimeout(timer);
+            controller.abort();
+        };
+    }, [searchTerm]);
+
+    const displayMovies = searchTerm ? searchResults : movies;
+    const displayLoading = searchTerm ? isSearching : loading;
 
     return (
         <PageTransition
@@ -107,9 +127,11 @@ const HomePage = () => {
             {/* Movies Grid */}
             <section>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-                    <h2 style={{ fontSize: '20px', color: 'var(--color-text-dim)', margin: 0 }}>Now Showing</h2>
+                    <h2 style={{ fontSize: '20px', color: 'var(--color-text-dim)', margin: 0 }}>
+                        {searchTerm ? 'Search Results' : 'Now Showing'}
+                    </h2>
                     <span style={{ fontSize: '12px', color: '#666' }}>
-                        {showInitialSkeleton ? 'Loading...' : `Showing ${movies.length} movies`}
+                        {showInitialSkeleton || displayLoading ? 'Loading...' : `Showing ${displayMovies.length} movies`}
                     </span>
                 </div>
 
@@ -127,7 +149,7 @@ const HomePage = () => {
                 )}
 
                 {/* Content Grid (Real Data) */}
-                {!showInitialSkeleton && movies.length > 0 && (
+                {!showInitialSkeleton && displayMovies.length > 0 && (
                     <motion.div
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
@@ -138,8 +160,8 @@ const HomePage = () => {
                             gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))',
                             gap: '24px'
                         }}>
-                            {movies.map((movie, index) => {
-                                const isLast = movies.length === index + 1;
+                            {displayMovies.map((movie, index) => {
+                                const isLast = displayMovies.length === index + 1;
                                 return (
                                     <motion.div
                                         key={movie.id}
@@ -156,15 +178,15 @@ const HomePage = () => {
                                 );
                             })}
 
-                            {/* Append Skeletons for Load More (Infinite Scroll) */}
-                            {loading && (
+                            {/* Append Skeletons for Load More (Infinite Scroll, browse mode only) */}
+                            {!searchTerm && loading && (
                                 [...Array(4)].map((_, i) => (
                                     <MovieCardSkeleton key={`skeleton-${i}`} />
                                 ))
                             )}
                         </div>
 
-                        {!hasMore && (
+                        {!searchTerm && !hasMore && (
                             <div style={{ textAlign: 'center', padding: '20px', color: 'var(--color-text-dim)', opacity: 0.5 }}>
                                 End of list
                             </div>
@@ -173,7 +195,7 @@ const HomePage = () => {
                 )}
 
                 {/* Empty State */}
-                {!loading && !showInitialSkeleton && movies.length === 0 && (
+                {!displayLoading && !showInitialSkeleton && displayMovies.length === 0 && (
                     <div style={{ textAlign: 'center', padding: '40px', color: 'var(--color-text-dim)' }}>No movies found.</div>
                 )}
             </section>
