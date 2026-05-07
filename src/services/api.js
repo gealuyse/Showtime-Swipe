@@ -37,6 +37,27 @@ export const getNowPlayingMovies = async (page = 1) => {
     }
 };
 
+export const searchMovies = async (query) => {
+    try {
+        const response = await tmdb.get('/search/movie', {
+            params: { query }
+        });
+        return response.data.results.map(movie => ({
+            id: movie.id,
+            title: movie.title,
+            poster: movie.poster_path ? `${IMAGE_BASE_URL}${movie.poster_path}` : null,
+            backdrop: movie.backdrop_path ? `${BACKDROP_BASE_URL}${movie.backdrop_path}` : null,
+            voteAverage: movie.vote_average,
+            releaseDate: movie.release_date,
+            overview: movie.overview,
+            genreIds: movie.genre_ids
+        }));
+    } catch (error) {
+        console.error("Error searching movies:", error);
+        return [];
+    }
+};
+
 export const getMovieDetail = async (id) => {
     try {
         // Append release_dates to get certification

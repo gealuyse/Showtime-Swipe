@@ -16,6 +16,10 @@ export const generateShowtimesForMovies = (movies) => {
                     const minute = Math.random() > 0.5 ? "00" : "30";
                     const sys = systems[Math.floor(Math.random() * systems.length)];
                     const lang = languages[Math.floor(Math.random() * languages.length)];
+                    const daysAhead = Math.floor(Math.random() * 3); // spread across today + 2 days
+                    const showDate = new Date();
+                    showDate.setDate(showDate.getDate() + daysAhead);
+                    const dateStr = showDate.toISOString().split('T')[0];
 
                     showtimes.push({
                         id: `show_${movie.id}_${theater.id}_${i}`,
@@ -23,7 +27,7 @@ export const generateShowtimesForMovies = (movies) => {
                         movieTitle: movie.title,
                         poster: movie.poster,
                         theaterId: theater.id,
-                        startTime: `${new Date().toISOString().split('T')[0]}T${hour}:${minute}:00`,
+                        startTime: `${dateStr}T${hour}:${minute}:00`,
                         system: sys,
                         audio: lang.audio,
                         subtitle: lang.sub,

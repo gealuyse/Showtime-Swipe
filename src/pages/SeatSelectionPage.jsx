@@ -100,7 +100,7 @@ const SeatSelectionPage = ({ isModal }) => {
 
     // Close on backdrop click
     const handleBackdropClick = (e) => {
-        if (e.target === e.currentTarget && ({ isModal })) {
+        if (e.target === e.currentTarget && isModal) {
             navigate(-1);
         }
     };
@@ -164,12 +164,13 @@ const SeatSelectionPage = ({ isModal }) => {
                 </div>
 
                 {/* Seat Map */}
+                <div style={{ flex: 1, overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
                 <div style={{
-                    flex: 1,
                     display: 'grid',
                     gridTemplateColumns: `repeat(${COLS}, 1fr)`,
                     gap: '8px',
                     padding: '20px',
+                    minWidth: '500px',
                     maxWidth: '500px',
                     margin: '0 auto',
                     alignContent: 'center'
@@ -218,6 +219,7 @@ const SeatSelectionPage = ({ isModal }) => {
                             </motion.button>
                         );
                     })}
+                </div>
                 </div>
 
                 {/* Legend */}
