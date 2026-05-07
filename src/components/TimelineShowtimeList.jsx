@@ -4,7 +4,13 @@ import TimelineShowtimeCard from './cards/TimelineShowtimeCard';
 import EmptyState from './ui/EmptyState';
 import useIsMobile from '../hooks/useIsMobile';
 
-const toDateKey = (date) => date.toISOString().split('T')[0];
+// Use local date parts to avoid UTC-shift mis-grouping in non-UTC timezones
+const toDateKey = (date) => {
+    const y = date.getFullYear();
+    const m = String(date.getMonth() + 1).padStart(2, '0');
+    const d = String(date.getDate()).padStart(2, '0');
+    return `${y}-${m}-${d}`;
+};
 
 const formatDayLabel = (dateKey) => {
     const today = toDateKey(new Date());
