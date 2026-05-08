@@ -1,11 +1,11 @@
 :root {
-  --color-bg: #0f1014;
-  --color-card: #1c1e26;
-  --color-primary: #e50914;
-  /* Netflix Red / Theater Red */
-  --color-text: #ffffff;
-  --color-text-dim: #a1a1aa;
-  --color-accent: #3b82f6;
+  --color-bg: #eef2ff;
+  --color-card: #ffffff;
+  --color-primary: #1a5cff;
+  --color-text: #0d1a3a;
+  --color-text-dim: #8a9bbf;
+  --color-accent: #1a5cff;
+  --color-border: rgba(26,92,255,0.1);
 
   --font-main: 'Inter', system-ui, sans-serif;
   --radius-md: 12px;
