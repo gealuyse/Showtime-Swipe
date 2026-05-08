@@ -1,6 +1,8 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 
+const TAKEN_PLACEHOLDERS = new Set(['0-1', '1-6', '2-3', '3-7', '4-2', '5-5']);
+
 const SkeletonBlock = ({ style, ...props }) => (
     <motion.div
         animate={{ opacity: [0.3, 0.6, 0.3] }}
@@ -10,7 +12,7 @@ const SkeletonBlock = ({ style, ...props }) => (
             ease: "easeInOut"
         }}
         style={{
-            backgroundColor: 'rgba(255, 255, 255, 0.08)',
+            backgroundColor: 'rgba(13, 26, 58, 0.08)',
             borderRadius: '8px',
             ...style
         }}
@@ -22,7 +24,7 @@ const SeatSkeleton = () => {
     return (
         <div style={{
             minHeight: '100vh',
-            background: '#0f1014',
+            background: 'var(--color-bg)',
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
@@ -59,7 +61,9 @@ const SeatSkeleton = () => {
                                     width: '32px',
                                     height: '32px',
                                     borderRadius: '8px',
-                                    backgroundColor: Math.random() > 0.8 ? 'rgba(255,255,255,0.02)' : 'rgba(255,255,255,0.08)' // Random "taken" seats
+                                    backgroundColor: TAKEN_PLACEHOLDERS.has(`${r}-${c}`)
+                                        ? 'rgba(13, 26, 58, 0.03)'
+                                        : 'rgba(13, 26, 58, 0.08)'
                                 }}
                             />
                         ))}

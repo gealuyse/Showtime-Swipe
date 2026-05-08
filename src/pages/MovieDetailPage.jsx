@@ -48,6 +48,11 @@ const MovieDetailPage = () => {
     useScrollRestoration('movie_detail_scroll', loading);
 
     const { scrollY } = useScroll();
+    const [hasScrolledHero, setHasScrolledHero] = useState(false);
+
+    useMotionValueEvent(scrollY, 'change', (latest) => {
+        setHasScrolledHero(latest > 40);
+    });
 
     // Cinematic Scroll Effects (Desktop Only mostly, but subtle on mobile)
     const scale = useTransform(scrollY, [0, 500], [1, 1.2]);
@@ -150,12 +155,18 @@ const MovieDetailPage = () => {
                         opacity: movie.backdrop ? 1 : 0
                     }} />
 
-                    {/* Gradient Overlay: Deep Black for text readability */}
+                    {/* Gradient Overlay: tuned for light theme and bright posters/backdrops */}
                     <div style={{
                         position: 'absolute', inset: 0,
                         background: isMobile
-                            ? 'linear-gradient(to top, var(--color-bg) 10%, rgba(15, 16, 20, 0.85) 50%, rgba(15, 16, 20, 0.4) 100%)'
-                            : 'linear-gradient(to bottom, transparent 20%, var(--color-bg) 100%)',
+                            ? 'linear-gradient(to top, var(--color-bg) 0%, rgba(238, 242, 255, 0.94) 35%, rgba(13, 26, 58, 0.42) 100%)'
+                            : 'linear-gradient(to bottom, rgba(13, 26, 58, 0.18) 0%, rgba(238, 242, 255, 0.2) 45%, var(--color-bg) 100%)',
+                    }} />
+                    <div style={{
+                        position: 'absolute',
+                        inset: 0,
+                        background: 'radial-gradient(circle at 50% 24%, rgba(255,255,255,0.08), transparent 34%), linear-gradient(to right, rgba(13,26,58,0.42), transparent 28%, transparent 72%, rgba(13,26,58,0.28))',
+                        pointerEvents: 'none'
                     }} />
                 </motion.div>
 
@@ -168,11 +179,11 @@ const MovieDetailPage = () => {
                         position: 'relative',
                         zIndex: 10,
                         marginTop: isMobile ? '35vh' : '45vh', // Pull up logic
-                        background: 'var(--color-bg)',
+                        background: 'linear-gradient(180deg, rgba(238,242,255,0.98), var(--color-bg) 160px)',
                         minHeight: '65vh',
                         borderTopLeftRadius: '24px',
                         borderTopRightRadius: '24px',
-                        boxShadow: '0 -10px 40px rgba(0,0,0,0.8)', // Stronger shadow
+                        boxShadow: '0 -10px 40px rgba(13, 26, 58, 0.18)',
                         padding: isMobile ? '24px 16px' : '0 20px 40px',
                         display: 'flex',
                         flexDirection: 'column',
@@ -214,14 +225,26 @@ const MovieDetailPage = () => {
                             />
                         </div>
 
-                        <div style={{ paddingBottom: isMobile ? 0 : '10px', width: '100%' }}>
+                        <div style={{
+                            padding: isMobile ? '14px 16px' : '16px 18px',
+                            paddingBottom: isMobile ? '14px' : '16px',
+                            width: '100%',
+                            borderRadius: '18px',
+                            background: isMobile || !hasScrolledHero
+                                ? 'rgba(255, 255, 255, 0.86)'
+                                : 'rgba(255, 255, 255, 0.72)',
+                            border: '1px solid rgba(26, 92, 255, 0.12)',
+                            boxShadow: '0 16px 40px rgba(13, 26, 58, 0.18)',
+                            backdropFilter: 'blur(14px)'
+                        }}>
                             <h1 style={{
                                 fontSize: isMobile ? '26px' : '32px',
                                 fontWeight: '800',
                                 margin: '0 0 12px 0',
-                                textShadow: isMobile ? 'none' : '0 2px 4px rgba(0,0,0,0.5)',
-                                lineHeight: 1.1,
-                                color: 'white'
+                                textShadow: 'none',
+                                lineHeight: 1.12,
+                                color: 'var(--color-text)',
+                                letterSpacing: '-0.02em'
                             }}>{movie.title}</h1>
 
                             {/* Meta Info */}
@@ -230,18 +253,18 @@ const MovieDetailPage = () => {
                                 flexWrap: 'wrap',
                                 gap: '8px',
                                 fontSize: '13px',
-                                color: '#ccc',
+                                color: 'var(--color-text-dim)',
                                 alignItems: 'center',
                                 justifyContent: isMobile ? 'center' : 'flex-start'
                             }}>
                                 <span style={{
-                                    background: 'rgba(255,255,255,0.1)',
-                                    border: '1px solid rgba(255,255,255,0.2)',
+                                    background: 'rgba(26,92,255,0.1)',
+                                    border: '1px solid rgba(26,92,255,0.18)',
+                                    color: 'var(--color-primary)',
                                     padding: '2px 8px',
                                     borderRadius: '6px',
                                     fontWeight: '600',
-                                    fontSize: '11px',
-                                    color: 'white'
+                                    fontSize: '11px'
                                 }}>{movie.rating || 'NR'}</span>
 
                                 <span style={{ opacity: 0.5 }}>•</span>
@@ -268,7 +291,8 @@ const MovieDetailPage = () => {
                         position: 'sticky',
                         top: '0',
                         zIndex: 40,
-                        background: 'var(--color-bg)',
+                        background: 'rgba(238,242,255,0.92)',
+                        backdropFilter: 'blur(12px)',
                         padding: '10px 0',
                         marginBottom: '16px'
                     }}>
@@ -276,7 +300,8 @@ const MovieDetailPage = () => {
                             role="tablist"
                             aria-label="View Mode Selection"
                             style={{
-                                background: 'rgba(255,255,255,0.1)',
+                                background: 'rgba(13,26,58,0.06)',
+                                border: '1px solid rgba(26,92,255,0.1)',
                                 padding: '4px',
                                 borderRadius: '12px',
                                 display: 'flex',
@@ -289,8 +314,9 @@ const MovieDetailPage = () => {
                                 className="focus:outline-none focus:ring-2 focus:ring-white/50"
                                 style={{
                                     flex: 1, // Full width tabs
-                                    background: viewMode === 'theater' ? 'rgba(255,255,255,0.2)' : 'transparent',
-                                    color: viewMode === 'theater' ? 'white' : '#aaa',
+                                    background: viewMode === 'theater' ? '#ffffff' : 'transparent',
+                                    color: viewMode === 'theater' ? 'var(--color-primary)' : 'var(--color-text-dim)',
+                                    boxShadow: viewMode === 'theater' ? '0 8px 18px rgba(13,26,58,0.08)' : 'none',
                                     border: 'none', padding: '10px', borderRadius: '8px', cursor: 'pointer',
                                     fontSize: '14px', fontWeight: '600', transition: 'all 0.2s',
                                     textAlign: 'center'
@@ -305,8 +331,9 @@ const MovieDetailPage = () => {
                                 className="focus:outline-none focus:ring-2 focus:ring-white/50"
                                 style={{
                                     flex: 1,
-                                    background: viewMode === 'timeline' ? 'rgba(255,255,255,0.2)' : 'transparent',
-                                    color: viewMode === 'timeline' ? 'white' : '#aaa',
+                                    background: viewMode === 'timeline' ? '#ffffff' : 'transparent',
+                                    color: viewMode === 'timeline' ? 'var(--color-primary)' : 'var(--color-text-dim)',
+                                    boxShadow: viewMode === 'timeline' ? '0 8px 18px rgba(13,26,58,0.08)' : 'none',
                                     border: 'none', padding: '10px', borderRadius: '8px', cursor: 'pointer',
                                     fontSize: '14px', fontWeight: '600', transition: 'all 0.2s',
                                     textAlign: 'center'

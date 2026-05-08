@@ -11,7 +11,7 @@ const SkeletonBlock = ({ style, ...props }) => (
             ease: "easeInOut"
         }}
         style={{
-            backgroundColor: 'rgba(255, 255, 255, 0.08)',
+            backgroundColor: 'rgba(13, 26, 58, 0.08)',
             borderRadius: '8px',
             ...style
         }}
@@ -23,7 +23,7 @@ const MovieDetailSkeleton = () => {
     const isMobile = useIsMobile();
 
     return (
-        <div style={{ minHeight: '100vh', background: '#0f1014', overflow: 'hidden' }}>
+        <div style={{ minHeight: '100vh', background: 'var(--color-bg)', overflow: 'hidden' }}>
             {/* Top Banner Placeholder */}
             <SkeletonBlock
                 style={{
@@ -42,7 +42,7 @@ const MovieDetailSkeleton = () => {
                 position: 'relative',
                 zIndex: 10,
                 marginTop: isMobile ? '40vh' : '45vh', // Approx sync with real layout
-                background: '#0f1014',
+                background: 'var(--color-bg)',
                 minHeight: '60vh',
                 borderTopLeftRadius: '24px',
                 borderTopRightRadius: '24px',
@@ -50,7 +50,7 @@ const MovieDetailSkeleton = () => {
                 display: 'flex',
                 flexDirection: 'column',
                 alignItems: isMobile ? 'stretch' : 'center',
-                boxShadow: '0 -10px 40px rgba(0,0,0,0.5)'
+                boxShadow: '0 -10px 40px rgba(13, 26, 58, 0.12)'
             }}>
                 {/* Movie Info Section (Poster + Title) */}
                 <div style={{

@@ -7,6 +7,8 @@ import BrandBadge from '../ui/BrandBadge';
 import { calculateEndTime } from '../../utils/dataTransformer';
 import { generateSeatsForSession } from '../../utils/seatGenerator';
 
+const formatPrice = (price) => `${Number(price).toLocaleString('th-TH')} THB`;
+
 const TimelineShowtimeCard = ({ showtime, movieDuration }) => {
     const { id, time, system, price, theater, language } = showtime;
     const navigate = useNavigate();
@@ -14,6 +16,7 @@ const TimelineShowtimeCard = ({ showtime, movieDuration }) => {
     const [hovered, setHovered] = useState(false);
 
     const endTime = calculateEndTime(time, movieDuration);
+    const priceLabel = formatPrice(price);
 
     const handleNavigation = (e) => {
         e.preventDefault();
@@ -35,27 +38,27 @@ const TimelineShowtimeCard = ({ showtime, movieDuration }) => {
         <a
             href={`/booking/${id}`}
             onClick={handleNavigation}
-            aria-label={`Book ${theater.name} at ${time}, ${system}, ${price} Baht`}
+            aria-label={`Book ${theater.name} at ${time}, ${system}, ${priceLabel}`}
             style={{ display: 'block', textDecoration: 'none', outline: 'none' }}
             onMouseEnter={() => setHovered(true)}
             onMouseLeave={() => setHovered(false)}
         >
             <div style={{
-                background: hovered ? '#23252e' : '#1c1e26',
-                border: `1px solid ${hovered ? 'rgba(255,255,255,0.2)' : 'rgba(255,255,255,0.05)'}`,
+                background: hovered ? '#ffffff' : 'rgba(255,255,255,0.88)',
+                border: `1px solid ${hovered ? 'rgba(26,92,255,0.22)' : 'rgba(26,92,255,0.1)'}`,
                 borderRadius: '12px',
                 overflow: 'hidden',
                 padding: '16px',
                 display: 'flex',
                 flexDirection: 'column',
                 gap: '12px',
-                transition: 'background 0.2s, border-color 0.2s'
+                transition: 'background 0.2s, border-color 0.2s, box-shadow 0.2s',
+                boxShadow: hovered ? '0 12px 28px rgba(13,26,58,0.1)' : '0 6px 18px rgba(13,26,58,0.04)'
             }}>
 
-                {/* Row 1: Theater name + brand */}
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px', minWidth: 0 }}>
                     <span style={{
-                        fontSize: '15px', fontWeight: '700', color: 'white',
+                        fontSize: '15px', fontWeight: '700', color: 'var(--color-text)',
                         overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flex: 1
                     }}>
                         {theater.name}
@@ -65,36 +68,33 @@ const TimelineShowtimeCard = ({ showtime, movieDuration }) => {
                     </div>
                 </div>
 
-                {/* Row 2: Time block + details + price */}
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '16px' }}>
-
-                    {/* Time */}
                     <div style={{ display: 'flex', flexDirection: 'column', minWidth: '60px' }}>
-                        <span style={{ fontSize: '28px', fontWeight: '900', color: 'white', lineHeight: 1, letterSpacing: '-0.5px' }}>
+                        <span style={{ fontSize: '28px', fontWeight: '900', color: 'var(--color-text)', lineHeight: 1, letterSpacing: '-0.5px' }}>
                             {time}
                         </span>
-                        <span style={{ fontSize: '11px', color: '#6b7280', marginTop: '4px', fontWeight: '500' }}>
+                        <span style={{ fontSize: '11px', color: 'var(--color-text-dim)', marginTop: '4px', fontWeight: '500' }}>
                             ~{endTime}
                         </span>
                     </div>
 
-                    {/* System + language + location */}
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', flex: 1 }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', flex: 1, minWidth: 0 }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
                             <SystemBadge system={system} />
-                            <span style={{ color: '#4b5563', fontSize: '11px' }}>•</span>
+                            <span style={{ color: 'rgba(13,26,58,0.35)', fontSize: '11px' }}>•</span>
                             <span style={{
-                                border: '1px solid rgba(255,255,255,0.1)',
+                                border: '1px solid rgba(26,92,255,0.12)',
+                                background: 'rgba(26,92,255,0.04)',
                                 padding: '1px 6px',
                                 borderRadius: '4px',
                                 fontSize: '10px',
                                 textTransform: 'uppercase',
-                                color: '#9ca3af'
+                                color: 'var(--color-text-dim)'
                             }}>
                                 {language || 'EN/TH'}
                             </span>
                         </div>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '4px', color: '#6b7280', fontSize: '11px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '4px', color: 'var(--color-text-dim)', fontSize: '11px', minWidth: 0 }}>
                             <MapPin size={11} />
                             <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '150px' }}>
                                 {theater.location?.district || 'Bangkok'}
@@ -102,19 +102,19 @@ const TimelineShowtimeCard = ({ showtime, movieDuration }) => {
                         </div>
                     </div>
 
-                    {/* Price + chevron */}
-                    <div style={{
+                    <div className="timeline-showtime-price" style={{
                         display: 'flex', flexDirection: 'column', alignItems: 'flex-end',
                         gap: '4px', paddingLeft: '16px',
-                        borderLeft: '1px solid rgba(255,255,255,0.05)'
+                        borderLeft: '1px solid rgba(13,26,58,0.08)',
+                        color: 'var(--color-text)'
                     }}>
-                        <span style={{ fontSize: '20px', fontWeight: '900', color: '#eab308', lineHeight: 1 }}>
-                            {price}฿
+                        <span style={{ fontSize: '15px', fontWeight: '800', color: 'var(--color-text)', lineHeight: 1 }}>
+                            {priceLabel}
                         </span>
                         <ChevronRight
                             size={18}
                             style={{
-                                color: hovered ? '#eab308' : '#6b7280',
+                                color: hovered ? 'var(--color-primary)' : 'var(--color-text-dim)',
                                 transform: hovered ? 'translateX(2px)' : 'none',
                                 transition: 'color 0.2s, transform 0.2s'
                             }}
